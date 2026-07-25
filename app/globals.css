@@ -20,10 +20,20 @@ body {
   @apply bg-sagebg text-sage text-xs font-semibold px-2.5 py-1 rounded-lg;
 }
 
-.app-shell {
-  @apply max-w-[430px] mx-auto min-h-screen bg-canvas relative;
-}
-
 .section-label {
   @apply text-xs font-semibold uppercase tracking-wider text-inksoft px-5 pb-2.5;
 }
+
+/* Custom scrollbar for horizontal chip scroll */
+::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e4dfd4;
+  border-radius: 4px;
+}
+

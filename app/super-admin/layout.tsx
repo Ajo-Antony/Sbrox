@@ -1,10 +1,5 @@
-import BottomNav from "@/components/shared/BottomNav";
+import AppShell from "@/components/shared/AppShell";
 
-export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="app-shell pb-24">
-      {children}
-      <BottomNav role="super-admin" />
-    </div>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <AppShell role="super-admin">{children}</AppShell>;
 }

@@ -1,0 +1,11 @@
+{
+  "name": "Quikdraw",
+  "description": "15-minute design bookings platform connecting users with local designers",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

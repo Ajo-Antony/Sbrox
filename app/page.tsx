@@ -9,18 +9,25 @@ const HOME_BY_ROLE: Record<string, string> = {
 };
 
 export default async function RootPage() {
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  let targetPath = "/user/browse";
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
 
-  if (!user) redirect("/user/browse"); // guests land on the public Browse screen
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+      targetPath = HOME_BY_ROLE[profile?.role ?? "user"] ?? "/user/browse";
+    }
+  } catch {
+    targetPath = "/user/browse";
+  }
 
-  redirect(HOME_BY_ROLE[profile?.role ?? "user"] ?? "/user/browse");
+  redirect(targetPath);
 }

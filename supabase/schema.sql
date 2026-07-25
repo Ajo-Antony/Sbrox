@@ -3,17 +3,31 @@
 
 create extension if not exists "uuid-ossp";
 
-create type role as enum ('user', 'designer', 'admin', 'super_admin');
-create type category as enum ('UI Design', 'Website Redesign', 'Photoshop');
-create type designer_status as enum ('pending_review', 'approved', 'suspended');
-create type booking_status as enum (
-  'pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'disputed'
-);
-create type payment_status as enum ('created', 'paid', 'failed', 'refunded');
+do $$ begin
+  create type role as enum ('user', 'designer', 'admin', 'super_admin');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type category as enum ('UI Design', 'Website Redesign', 'Photoshop');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type designer_status as enum ('pending_review', 'approved', 'suspended');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type booking_status as enum (
+    'pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'disputed'
+  );
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type payment_status as enum ('created', 'paid', 'failed', 'refunded');
+exception when duplicate_object then null; end $$;
 
 -- One row per auth.users user, carrying the role that drives every
 -- middleware/RLS decision in the app.
-create table profiles (
+create table if not exists profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   role role not null default 'user',
   full_name text not null,
@@ -22,7 +36,7 @@ create table profiles (
   created_at timestamptz not null default now()
 );
 
-create table designers (
+create table if not exists designers (
   id uuid primary key default uuid_generate_v4(),
   profile_id uuid not null references profiles (id) on delete cascade,
   headline text not null,
@@ -38,7 +52,7 @@ create table designers (
   unique (profile_id)
 );
 
-create table portfolio_items (
+create table if not exists portfolio_items (
   id uuid primary key default uuid_generate_v4(),
   designer_id uuid not null references designers (id) on delete cascade,
   image_url text not null,
@@ -46,7 +60,7 @@ create table portfolio_items (
   created_at timestamptz not null default now()
 );
 
-create table slots (
+create table if not exists slots (
   id uuid primary key default uuid_generate_v4(),
   designer_id uuid not null references designers (id) on delete cascade,
   starts_at timestamptz not null,
@@ -54,9 +68,9 @@ create table slots (
   locked_by_booking_id uuid, -- set by book_slot(); null means free
   created_at timestamptz not null default now()
 );
-create index slots_designer_free_idx on slots (designer_id) where locked_by_booking_id is null;
+create index if not exists slots_designer_free_idx on slots (designer_id) where locked_by_booking_id is null;
 
-create table bookings (
+create table if not exists bookings (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references profiles (id),
   designer_id uuid not null references designers (id),
@@ -70,11 +84,13 @@ create table bookings (
   created_at timestamptz not null default now()
 );
 
-alter table slots
-  add constraint slots_locked_by_booking_fk
-  foreign key (locked_by_booking_id) references bookings (id) on delete set null;
+do $$ begin
+  alter table slots
+    add constraint slots_locked_by_booking_fk
+    foreign key (locked_by_booking_id) references bookings (id) on delete set null;
+exception when duplicate_object then null; end $$;
 
-create table payments (
+create table if not exists payments (
   id uuid primary key default uuid_generate_v4(),
   booking_id uuid not null references bookings (id) on delete cascade,
   razorpay_order_id text not null unique,
@@ -86,7 +102,7 @@ create table payments (
 
 -- Creates the profiles row (and, for designer signups, the pending
 -- designers row) the moment a new auth.users record appears.
-create function handle_new_user()
+create or replace function handle_new_user()
 returns trigger as $$
 begin
   insert into profiles (id, role, full_name)
@@ -94,24 +110,27 @@ begin
     new.id,
     coalesce((new.raw_user_meta_data ->> 'role')::role, 'user'),
     coalesce(new.raw_user_meta_data ->> 'full_name', 'New user')
-  );
+  )
+  on conflict (id) do nothing;
 
   if (new.raw_user_meta_data ->> 'role') = 'designer' then
     insert into designers (profile_id, headline, rate_per_15min, lat, lng)
-    values (new.id, 'New designer', 399, 9.9312, 76.2673);
+    values (new.id, 'New designer', 399, 9.9312, 76.2673)
+    on conflict (profile_id) do nothing;
   end if;
 
   return new;
 end;
 $$ language plpgsql security definer;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure handle_new_user();
 
 -- Atomically locks a free slot and inserts the booking in one transaction,
 -- so two users racing for the same 15-minute slot can't both win it.
-create function book_slot(
+create or replace function book_slot(
   p_user_id uuid,
   p_designer_id uuid,
   p_slot_id uuid,

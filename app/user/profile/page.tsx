@@ -6,7 +6,7 @@ export default function UserProfilePage() {
   return (
     <div>
       <TopBar title="Profile" />
-      <div className="px-5 flex flex-col gap-3">
+      <div className="px-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         <Card className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-full bg-sagebg flex items-center justify-center font-display font-semibold text-lg text-sage">
             A
