@@ -6,7 +6,7 @@ export default function SuperAdminDashboardPage() {
   return (
     <div>
       <TopBar title="Platform overview" sub="All markets" />
-      <div className="px-5 grid grid-cols-2 gap-3">
+      <div className="px-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="GMV this month" value={formatINR(1284000)} />
         <StatCard label="Take rate" value="15%" />
         <StatCard label="Active designers" value="86" sub="across 4 cities" />

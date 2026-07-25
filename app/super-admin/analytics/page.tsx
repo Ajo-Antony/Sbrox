@@ -13,7 +13,7 @@ export default function AnalyticsPage() {
   return (
     <div>
       <TopBar title="Analytics" sub="GMV by market, last 30 days" />
-      <div className="px-5 flex flex-col gap-3">
+      <div className="px-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         {BY_CITY.map((c) => (
           <Card key={c.city} className="flex justify-between items-center">
             <div className="font-semibold text-sm">{c.city}</div>
