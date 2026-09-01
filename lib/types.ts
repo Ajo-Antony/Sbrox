@@ -72,8 +72,42 @@ export interface Payment {
   razorpay_order_id: string;
   razorpay_payment_id: string | null;
   amount: number;
-  status: "created" | "paid" | "failed" | "refunded";
+  status: "pending" | "completed" | "failed" | "refunded";
+  designer_payout: number | null;
+  platform_commission: number | null;
+  receipt_id: string | null;
   created_at: string;
+}
+
+export interface PaymentMethod {
+  hourly: number;
+  perProject: number;
+  subscription: number;
+}
+
+export interface RazorpayWebhookEvent {
+  id: string;
+  entity: string;
+  event: string;
+  created_at: number;
+  payload: {
+    payment?: {
+      entity: {
+        id: string;
+        order_id: string;
+        amount: number;
+        status: string;
+      };
+    };
+    refund?: {
+      entity: {
+        id: string;
+        payment_id: string;
+        amount: number;
+        status: string;
+      };
+    };
+  };
 }
 
 // Minimal Supabase Database type — extend with `supabase gen types typescript`
