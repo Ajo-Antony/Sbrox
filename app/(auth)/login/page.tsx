@@ -57,9 +57,14 @@ export default function LoginPage() {
             {loading ? "Signing in…" : "Sign in"}
           </Button>
         </form>
-        <a href="/signup" className="text-center block text-xs text-inksoft mt-4">
-          New designer? Apply here
-        </a>
+        <div className="flex flex-col gap-2 mt-4 text-xs">
+          <a href="/forgot-password" className="text-coral hover:text-coraldark">
+            Forgot password?
+          </a>
+          <a href="/signup" className="text-inksoft hover:text-ink">
+            New to Quikdraw? Sign up
+          </a>
+        </div>
       </div>
     </div>
   );
