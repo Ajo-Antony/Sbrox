@@ -1,3 +1,12 @@
-export default function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="badge">{children}</span>;
+export default function Badge({ 
+  children, 
+  className = "badge",
+  classNameOverride 
+}: { 
+  children: React.ReactNode;
+  className?: string;
+  classNameOverride?: string;
+}) {
+  const finalClassName = classNameOverride || className;
+  return <span className={finalClassName}>{children}</span>;
 }
